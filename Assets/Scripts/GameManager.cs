@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Central manager responsible for game flow, UI state, and entity spawning.
@@ -20,7 +21,9 @@ public class GameManager : PersistentSingleton<GameManager>
     [SerializeField] private TextMeshProUGUI loseScoreValueText;
     [SerializeField] private EntitySpawner playerSpawner;
     [SerializeField] private EntitySpawner wardenSpawner;
-    
+    [SerializeField] private EntitySpawner[] obstacleSpawners;
+    private List<GameObject> _spawnedObstacles;
+
     /// <summary>Fired when the game state changes.</summary>
     /// <remarks>Subscribers receive the new <see cref="GameState"/> as a parameter.</remarks>
     public event Action<GameState> OnGameStateChanged;
@@ -70,6 +73,7 @@ public class GameManager : PersistentSingleton<GameManager>
     {
         CurrentGameState = GameState.InMenu;
         canvasUIStart.SetActive(true);
+        _spawnedObstacles = new List<GameObject>();
     }
 
     /// <summary>
@@ -94,7 +98,12 @@ public class GameManager : PersistentSingleton<GameManager>
 
         // Clean up any leftover entities from a previous session
         if (_playerController) Destroy(_playerController.gameObject);
-        if (_warden) Destroy(_warden);
+        if (_warden)
+        {
+            Destroy(_warden);
+        }
+        foreach (var spawnedObstacle in _spawnedObstacles) Destroy(spawnedObstacle);
+        _spawnedObstacles.Clear();
         
         // Spawn and initialise the player
         var playerRef = playerSpawner.SpawnEntity();
@@ -104,13 +113,13 @@ public class GameManager : PersistentSingleton<GameManager>
 
         // Spawn the warden
         _warden = wardenSpawner.SpawnEntity();
-        
+
         // Spawn the coins
         foreach (var coin in FindObjectsByType<CoinBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             coin.gameObject.SetActive(true);
-        
-        // Reset dynamic objects
-        OnGameStateChanged?.Invoke(CurrentGameState);
+
+        // Spawn objects
+        foreach (var spawner in obstacleSpawners) _spawnedObstacles.Add(spawner.SpawnEntity());
 
         // Transition UI to in-game state
         cameraController.enabled = true;
@@ -118,7 +127,7 @@ public class GameManager : PersistentSingleton<GameManager>
         canvasUIInGame.SetActive(true);
         canvasUIWin.SetActive(false);
         canvasUILose.SetActive(false);
-        
+
         // Subscribe to score events and reset the score display
         _playerController.OnScoreUpdated += UpdateUIScores;
         _playerController.OnScoreUpdated += CheckGameCompletion;
