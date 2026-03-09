@@ -67,5 +67,6 @@ public class WardenBehaviour : MonoBehaviour
     private void OnGameStateChanged(GameManager.GameState gameState)
     {
         _isGameComplete = gameState == GameManager.GameState.Complete;
+        if (_isGameComplete) _navMeshAgent.isStopped = true;
     }
 }

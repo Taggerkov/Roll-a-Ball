@@ -44,7 +44,7 @@ public class ResetOnGameStart : MonoBehaviour
     /// </summary>
     private void OnGameStateChanged(GameManager.GameState state)
     {
-        if (state != GameManager.GameState.InProgress) return;
+        if (state == GameManager.GameState.Complete) return;
         transform.position = _initialPosition;
         transform.rotation = _initialRotation;
     }

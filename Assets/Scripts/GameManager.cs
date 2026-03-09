@@ -20,7 +20,7 @@ public class GameManager : PersistentSingleton<GameManager>
     [SerializeField] private TextMeshProUGUI loseScoreValueText;
     [SerializeField] private EntitySpawner playerSpawner;
     [SerializeField] private EntitySpawner wardenSpawner;
-
+    
     /// <summary>Fired when the game state changes.</summary>
     /// <remarks>Subscribers receive the new <see cref="GameState"/> as a parameter.</remarks>
     public event Action<GameState> OnGameStateChanged;
